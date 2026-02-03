@@ -2,95 +2,143 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* Operational Control System Design - Clean, Hierarchical, Readable */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Base colors - Professional Navy Theme */
+    --background: 220 20% 97%;
+    --foreground: 220 30% 15%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 220 30% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 220 30% 15%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Primary - Deep Navy */
+    --primary: 220 60% 25%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Secondary - Soft Blue-Gray */
+    --secondary: 220 20% 92%;
+    --secondary-foreground: 220 30% 25%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Muted - Light Gray */
+    --muted: 220 15% 94%;
+    --muted-foreground: 220 10% 45%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Accent - Subtle Blue */
+    --accent: 210 50% 95%;
+    --accent-foreground: 220 60% 25%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    /* Destructive - Red */
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    /* Borders and Inputs */
+    --border: 220 20% 88%;
+    --input: 220 20% 88%;
+    --ring: 220 60% 45%;
 
-    --radius: 0.5rem;
+    --radius: 0.625rem;
 
-    --sidebar-background: 0 0% 98%;
+    /* Custom Priority Colors */
+    --urgent: 25 95% 53%;
+    --urgent-bg: 25 100% 96%;
+    --urgent-border: 25 90% 70%;
+    --urgent-foreground: 25 90% 30%;
 
-    --sidebar-foreground: 240 5.3% 26.1%;
+    --warning: 43 96% 56%;
+    --warning-bg: 43 100% 96%;
+    --warning-border: 43 80% 65%;
+    --warning-foreground: 43 80% 25%;
 
-    --sidebar-primary: 240 5.9% 10%;
+    --info: 210 60% 50%;
+    --info-bg: 210 80% 96%;
+    --info-border: 210 60% 75%;
+    --info-foreground: 210 70% 25%;
 
-    --sidebar-primary-foreground: 0 0% 98%;
+    --success: 142 70% 45%;
+    --success-bg: 142 60% 95%;
+    --success-border: 142 50% 65%;
+    --success-foreground: 142 70% 20%;
 
-    --sidebar-accent: 240 4.8% 95.9%;
+    /* Category Colors */
+    --graduado: 250 60% 50%;
+    --graduado-bg: 250 60% 95%;
+    --soldado: 180 50% 45%;
+    --soldado-bg: 180 50% 93%;
 
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Sidebar */
+    --sidebar-background: 220 30% 18%;
+    --sidebar-foreground: 220 10% 90%;
+    --sidebar-primary: 210 60% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 25% 25%;
+    --sidebar-accent-foreground: 220 10% 90%;
+    --sidebar-border: 220 20% 25%;
+    --sidebar-ring: 210 60% 60%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: 220 25% 10%;
+    --foreground: 220 10% 95%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 220 25% 14%;
+    --card-foreground: 220 10% 95%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 220 25% 14%;
+    --popover-foreground: 220 10% 95%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 210 60% 55%;
+    --primary-foreground: 220 25% 10%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 220 20% 20%;
+    --secondary-foreground: 220 10% 90%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 220 20% 18%;
+    --muted-foreground: 220 10% 60%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 220 25% 22%;
+    --accent-foreground: 210 60% 60%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    --border: 220 20% 22%;
+    --input: 220 20% 22%;
+    --ring: 210 60% 55%;
+
+    --urgent-bg: 25 80% 15%;
+    --urgent-border: 25 70% 40%;
+    --urgent-foreground: 25 90% 70%;
+
+    --warning-bg: 43 70% 15%;
+    --warning-border: 43 60% 40%;
+    --warning-foreground: 43 80% 70%;
+
+    --info-bg: 210 50% 18%;
+    --info-border: 210 50% 40%;
+    --info-foreground: 210 60% 70%;
+
+    --success-bg: 142 40% 15%;
+    --success-border: 142 40% 35%;
+    --success-foreground: 142 60% 65%;
+
+    --graduado-bg: 250 40% 20%;
+    --soldado-bg: 180 35% 18%;
+
+    --sidebar-background: 220 30% 8%;
+    --sidebar-foreground: 220 10% 90%;
+    --sidebar-primary: 210 60% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-accent: 220 25% 15%;
+    --sidebar-accent-foreground: 220 10% 90%;
+    --sidebar-border: 220 20% 15%;
+    --sidebar-ring: 210 60% 60%;
   }
 }
 
@@ -99,7 +147,83 @@ All colors MUST be HSL.
     @apply border-border;
   }
 
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+  }
+}
+
+@layer components {
+  /* Priority Card Styles */
+  .card-urgent {
+    @apply bg-urgent-bg border-2 border-urgent-border;
+  }
+
+  .card-warning {
+    @apply bg-warning-bg border-2 border-warning-border;
+  }
+
+  .card-info {
+    @apply bg-info-bg border border-info-border;
+  }
+
+  .card-success {
+    @apply bg-success-bg border border-success-border;
+  }
+
+  /* Category Badges */
+  .badge-graduado {
+    @apply bg-graduado-bg text-graduado border border-graduado/30;
+  }
+
+  .badge-soldado {
+    @apply bg-soldado-bg text-soldado border border-soldado/30;
+  }
+
+  /* Shift Indicators */
+  .shift-matutino {
+    @apply bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300;
+  }
+
+  .shift-vespertino {
+    @apply bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300;
+  }
+
+  .shift-integral {
+    @apply bg-slate-200 text-slate-800 dark:bg-slate-700 dark:text-slate-200;
+  }
+}
+
+@layer utilities {
+  /* Custom animations */
+  .animate-slide-up {
+    animation: slideUp 0.3s ease-out;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.2s ease-out;
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
   }
 }
