@@ -1,0 +1,161 @@
+{
+  "funcionarios": [
+    {
+      "id": "f1",
+      "nome": "ANGÉLICA",
+      "graduacao": "2S",
+      "categoria": "GRADUADO",
+      "ordemAntiguidade": 1,
+      "ativo": true
+    },
+    {
+      "id": "f10",
+      "nome": "LOURES",
+      "graduacao": "S2",
+      "categoria": "CABO_SOLDADO",
+      "ordemAntiguidade": 10,
+      "ativo": true
+    },
+    {
+      "id": "f11",
+      "nome": "EDUARDO SILVA",
+      "graduacao": "S2",
+      "categoria": "CABO_SOLDADO",
+      "ordemAntiguidade": 11,
+      "ativo": true
+    },
+    {
+      "id": "f2",
+      "nome": "JÉSSICA LOZASSO",
+      "graduacao": "2S",
+      "categoria": "GRADUADO",
+      "ordemAntiguidade": 2,
+      "ativo": true
+    },
+    {
+      "id": "f3",
+      "nome": "STILIS",
+      "graduacao": "3S",
+      "categoria": "GRADUADO",
+      "ordemAntiguidade": 3,
+      "ativo": true
+    },
+    {
+      "id": "f4",
+      "nome": "HIPÓLITO",
+      "graduacao": "3S",
+      "categoria": "GRADUADO",
+      "ordemAntiguidade": 4,
+      "ativo": true
+    },
+    {
+      "id": "f5",
+      "nome": "NICOLY",
+      "graduacao": "3S",
+      "categoria": "GRADUADO",
+      "ordemAntiguidade": 5,
+      "ativo": true
+    },
+    {
+      "id": "f6",
+      "nome": "BARRETO",
+      "graduacao": "3S",
+      "categoria": "GRADUADO",
+      "ordemAntiguidade": 6,
+      "ativo": true
+    },
+    {
+      "id": "f7",
+      "nome": "ROCHA",
+      "graduacao": "S1",
+      "categoria": "CABO_SOLDADO",
+      "ordemAntiguidade": 7,
+      "ativo": true
+    },
+    {
+      "id": "f8",
+      "nome": "BASSE",
+      "graduacao": "S1",
+      "categoria": "CABO_SOLDADO",
+      "ordemAntiguidade": 8,
+      "ativo": true
+    },
+    {
+      "id": "f9",
+      "nome": "GOMES",
+      "graduacao": "S1",
+      "categoria": "CABO_SOLDADO",
+      "ordemAntiguidade": 9,
+      "ativo": true
+    }
+  ],
+  "ausencias": [
+    {
+      "funcionarioId": "f1",
+      "motivo": "Dispensado pela chefia",
+      "dataInicio": "2026-02-06",
+      "dataFim": "2026-02-06",
+      "turnoPadrao": "INTEGRAL",
+      "excecoesPorDia": [],
+      "id": "a1770229278968"
+    },
+    {
+      "funcionarioId": "f5",
+      "motivo": "Comissão",
+      "dataInicio": "2026-02-06",
+      "dataFim": "2026-02-06",
+      "turnoPadrao": "INTEGRAL",
+      "excecoesPorDia": [],
+      "observacao": "Comissão de conscritos",
+      "id": "a1770229332707"
+    },
+    {
+      "funcionarioId": "f4",
+      "motivo": "Dispensado pela chefia",
+      "dataInicio": "2026-02-23",
+      "dataFim": "2026-02-24",
+      "turnoPadrao": "INTEGRAL",
+      "excecoesPorDia": [],
+      "observacao": "Acompanhamento da pós-cirurgia da esposa",
+      "id": "a1770229382836"
+    },
+    {
+      "funcionarioId": "f2",
+      "motivo": "Férias",
+      "dataInicio": "2026-03-02",
+      "dataFim": "2026-03-31",
+      "turnoPadrao": "INTEGRAL",
+      "excecoesPorDia": [],
+      "id": "a1770229430807"
+    },
+    {
+      "funcionarioId": "f5",
+      "motivo": "Reunião",
+      "dataInicio": "2026-02-05",
+      "dataFim": "2026-02-05",
+      "turnoPadrao": "VESPERTINO",
+      "excecoesPorDia": [],
+      "id": "a1770229465326"
+    },
+    {
+      "funcionarioId": "f4",
+      "motivo": "Serviço",
+      "dataInicio": "2026-02-26",
+      "dataFim": "2026-02-26",
+      "turnoPadrao": "INTEGRAL",
+      "excecoesPorDia": [],
+      "observacao": "DT",
+      "id": "a1770230041575"
+    },
+    {
+      "funcionarioId": "f4",
+      "motivo": "Serviço",
+      "dataInicio": "2026-03-05",
+      "dataFim": "2026-03-06",
+      "turnoPadrao": "INTEGRAL",
+      "excecoesPorDia": [],
+      "observacao": "CMT Guarda",
+      "id": "a1770230154462"
+    }
+  ]
+}

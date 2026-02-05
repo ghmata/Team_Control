@@ -10,13 +10,14 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Consulta from "./pages/Consulta";
 import Admin from "./pages/Admin";
+import Migrate from "./pages/Migrate";
 import NotFound from "./pages/NotFound";
 import Install from "./pages/Install";
 
 const queryClient = new QueryClient();
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, isEncarregado } = useAuth();
   
   if (isLoading) {
     return (
@@ -26,10 +27,14 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     );
   }
   
-  if (!user) {
+  if (!user || !isEncarregado) {
     return <Navigate to="/login" replace />;
   }
   
+  return <AppLayout>{children}</AppLayout>;
+}
+
+function PublicRoute({ children }: { children: React.ReactNode }) {
   return <AppLayout>{children}</AppLayout>;
 }
 
@@ -38,10 +43,11 @@ function AppRoutes() {
   
   return (
     <Routes>
-      <Route path="/login" element={user ? <Navigate to="/" replace /> : <Login />} />
-      <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-      <Route path="/consulta" element={<ProtectedRoute><Consulta /></ProtectedRoute>} />
+      <Route path="/login" element={user ? <Navigate to="/admin" replace /> : <Login />} />
+      <Route path="/" element={<PublicRoute><Dashboard /></PublicRoute>} />
+      <Route path="/consulta" element={<PublicRoute><Consulta /></PublicRoute>} />
       <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+      <Route path="/migrate" element={<Migrate />} />
       <Route path="/install" element={<Install />} />
       <Route path="*" element={<NotFound />} />
     </Routes>

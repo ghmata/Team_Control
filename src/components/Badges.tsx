@@ -1,4 +1,4 @@
-import { Turno, Categoria } from '@/types';
+import { Turno, Categoria, MotivoAusencia } from '@/types';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
@@ -35,17 +35,30 @@ interface CategoryBadgeProps {
 export function CategoryBadge({ categoria, className }: CategoryBadgeProps) {
   const labels: Record<Categoria, string> = {
     GRADUADO: 'Graduado',
-    SOLDADO: 'Soldado',
+    CABO_SOLDADO: 'Cabo/Soldado',
   };
 
   const styles: Record<Categoria, string> = {
     GRADUADO: 'badge-graduado',
-    SOLDADO: 'badge-soldado',
+    CABO_SOLDADO: 'badge-soldado',
   };
 
   return (
     <Badge variant="outline" className={cn('text-xs font-medium', styles[categoria], className)}>
       {labels[categoria]}
+    </Badge>
+  );
+}
+
+interface MotivoBadgeProps {
+  motivo: MotivoAusencia;
+  className?: string;
+}
+
+export function MotivoBadge({ motivo, className }: MotivoBadgeProps) {
+  return (
+    <Badge variant="outline" className={cn('text-xs font-medium bg-primary/5 text-primary border-primary/20', className)}>
+      {motivo}
     </Badge>
   );
 }

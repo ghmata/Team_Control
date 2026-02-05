@@ -5,7 +5,12 @@ interface EfetivoDBSchema extends DBSchema {
   funcionarios: {
     key: string;
     value: Funcionario;
-    indexes: { 'by-categoria': string; 'by-nome': string };
+    indexes: { 
+      'by-categoria': string; 
+      'by-nome': string; 
+      'by-graduacao': string;
+      'by-ordem': number;
+    };
   };
   ausencias: {
     key: string;
@@ -20,7 +25,7 @@ interface EfetivoDBSchema extends DBSchema {
 }
 
 const DB_NAME = 'efetivo-db';
-const DB_VERSION = 1;
+const DB_VERSION = 3;
 
 let dbInstance: IDBPDatabase<EfetivoDBSchema> | null = null;
 
@@ -28,12 +33,14 @@ export async function getDB(): Promise<IDBPDatabase<EfetivoDBSchema>> {
   if (dbInstance) return dbInstance;
 
   dbInstance = await openDB<EfetivoDBSchema>(DB_NAME, DB_VERSION, {
-    upgrade(db) {
+    async upgrade(db, oldVersion, newVersion, transaction) {
       // Funcionarios store
       if (!db.objectStoreNames.contains('funcionarios')) {
         const funcionarioStore = db.createObjectStore('funcionarios', { keyPath: 'id' });
         funcionarioStore.createIndex('by-categoria', 'categoria');
         funcionarioStore.createIndex('by-nome', 'nome');
+        funcionarioStore.createIndex('by-graduacao', 'graduacao');
+        funcionarioStore.createIndex('by-ordem', 'ordemAntiguidade');
       }
 
       // Ausencias store
@@ -48,10 +55,24 @@ export async function getDB(): Promise<IDBPDatabase<EfetivoDBSchema>> {
         const userStore = db.createObjectStore('users', { keyPath: 'id' });
         userStore.createIndex('by-email', 'email');
       }
+
+      // Migration from v2 to v3: Clear old data and insert real personnel
+      if (oldVersion < 3 && oldVersion > 0) {
+        console.log('Migrating to v3: Replacing demo data with real personnel');
+        
+        // Clear old funcionarios and ausencias
+        const funcionariosStore = transaction.objectStore('funcionarios');
+        const ausenciasStore = transaction.objectStore('ausencias');
+        
+        await funcionariosStore.clear();
+        await ausenciasStore.clear();
+        
+        // Insert will happen after upgrade completes
+      }
     },
   });
 
-  // Initialize with demo data if empty
+  // Always check if we need to initialize data (v3 migration or first install)
   const funcionarioCount = await dbInstance.count('funcionarios');
   if (funcionarioCount === 0) {
     await initializeDemoData(dbInstance);
@@ -61,22 +82,25 @@ export async function getDB(): Promise<IDBPDatabase<EfetivoDBSchema>> {
 }
 
 async function initializeDemoData(db: IDBPDatabase<EfetivoDBSchema>) {
-  // Demo users
+  // Demo users - 2S ANGÉLICA é encarregada
   const users: User[] = [
-    { id: '1', nome: 'Administrador', email: 'admin@sistema.com', role: 'ENCARREGADO' },
+    { id: '1', nome: '2S ANGÉLICA', email: 'angelica@sistema.com', role: 'ENCARREGADO' },
     { id: '2', nome: 'Visualizador', email: 'user@sistema.com', role: 'FUNCIONARIO' },
   ];
 
-  // Demo employees
+  // Real military personnel with ranks and seniority order
   const funcionarios: Funcionario[] = [
-    { id: 'f1', nome: 'Sgt Silva', categoria: 'GRADUADO', ativo: true },
-    { id: 'f2', nome: 'Cb Santos', categoria: 'GRADUADO', ativo: true },
-    { id: 'f3', nome: 'Sd Oliveira', categoria: 'SOLDADO', ativo: true },
-    { id: 'f4', nome: 'Sd Pereira', categoria: 'SOLDADO', ativo: true },
-    { id: 'f5', nome: 'Sd Costa', categoria: 'SOLDADO', ativo: true },
-    { id: 'f6', nome: 'Cb Almeida', categoria: 'GRADUADO', ativo: true },
-    { id: 'f7', nome: 'Sd Rodrigues', categoria: 'SOLDADO', ativo: true },
-    { id: 'f8', nome: 'Sd Ferreira', categoria: 'SOLDADO', ativo: true },
+    { id: 'f1', nome: 'ANGÉLICA', graduacao: '2S', categoria: 'GRADUADO', ordemAntiguidade: 1, ativo: true },
+    { id: 'f2', nome: 'JÉSSICA LOZASSO', graduacao: '2S', categoria: 'GRADUADO', ordemAntiguidade: 2, ativo: true },
+    { id: 'f3', nome: 'STILIS', graduacao: '3S', categoria: 'GRADUADO', ordemAntiguidade: 3, ativo: true },
+    { id: 'f4', nome: 'HIPÓLITO', graduacao: '3S', categoria: 'GRADUADO', ordemAntiguidade: 4, ativo: true },
+    { id: 'f5', nome: 'NICOLY', graduacao: '3S', categoria: 'GRADUADO', ordemAntiguidade: 5, ativo: true },
+    { id: 'f6', nome: 'BARRETO', graduacao: '3S', categoria: 'GRADUADO', ordemAntiguidade: 6, ativo: true },
+    { id: 'f7', nome: 'ROCHA', graduacao: 'S1', categoria: 'CABO_SOLDADO', ordemAntiguidade: 7, ativo: true },
+    { id: 'f8', nome: 'BASSE', graduacao: 'S1', categoria: 'CABO_SOLDADO', ordemAntiguidade: 8, ativo: true },
+    { id: 'f9', nome: 'GOMES', graduacao: 'S1', categoria: 'CABO_SOLDADO', ordemAntiguidade: 9, ativo: true },
+    { id: 'f10', nome: 'LOURES', graduacao: 'S2', categoria: 'CABO_SOLDADO', ordemAntiguidade: 10, ativo: true },
+    { id: 'f11', nome: 'EDUARDO SILVA', graduacao: 'S2', categoria: 'CABO_SOLDADO', ordemAntiguidade: 11, ativo: true },
   ];
 
   // Demo absences (relative to today)
@@ -95,7 +119,7 @@ async function initializeDemoData(db: IDBPDatabase<EfetivoDBSchema>) {
   const ausencias: Ausencia[] = [
     {
       id: 'a1',
-      funcionarioId: 'f1',
+      funcionarioId: 'f1', // ANGÉLICA
       motivo: 'Férias',
       dataInicio: formatDate(today),
       dataFim: formatDate(in5Days),
@@ -105,7 +129,7 @@ async function initializeDemoData(db: IDBPDatabase<EfetivoDBSchema>) {
     },
     {
       id: 'a2',
-      funcionarioId: 'f3',
+      funcionarioId: 'f7', // ROCHA
       motivo: 'Dispensa Médica',
       dataInicio: formatDate(today),
       dataFim: formatDate(today),
@@ -114,7 +138,7 @@ async function initializeDemoData(db: IDBPDatabase<EfetivoDBSchema>) {
     },
     {
       id: 'a3',
-      funcionarioId: 'f4',
+      funcionarioId: 'f10', // LOURES
       motivo: 'Missão',
       dataInicio: formatDate(tomorrow),
       dataFim: formatDate(in3Days),
@@ -125,7 +149,7 @@ async function initializeDemoData(db: IDBPDatabase<EfetivoDBSchema>) {
     },
     {
       id: 'a4',
-      funcionarioId: 'f6',
+      funcionarioId: 'f3', // STILIS
       motivo: 'Comissão',
       dataInicio: formatDate(tomorrow),
       dataFim: formatDate(tomorrow),

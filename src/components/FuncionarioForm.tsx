@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { X, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useData } from '@/contexts/DataContext';
-import { Funcionario, Categoria } from '@/types';
+import { Funcionario, Graduacao, GRADUACAO_HIERARCHY, getCategoriaByGraduacao } from '@/types';
 
 interface FuncionarioFormProps {
   funcionario?: Funcionario | null;
@@ -27,16 +27,38 @@ interface FuncionarioFormProps {
 }
 
 export function FuncionarioForm({ funcionario, onClose }: FuncionarioFormProps) {
-  const { addFuncionario, updateFuncionario } = useData();
+  const { addFuncionario, updateFuncionario, funcionarios } = useData();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     nome: funcionario?.nome || '',
-    categoria: funcionario?.categoria || 'SOLDADO' as Categoria,
+    graduacao: funcionario?.graduacao || '2S' as Graduacao,
     ativo: funcionario?.ativo ?? true,
   });
   const [error, setError] = useState('');
 
   const isEditing = !!funcionario;
+
+  // Auto-calculate next ordem antiguidade
+  const getNextOrdemAntiguidade = (): number => {
+    if (funcionarios.length === 0) return 1;
+    const maxOrdem = Math.max(...funcionarios.map(f => f.ordemAntiguidade));
+    return maxOrdem + 1;
+  };
+
+  // Sort existing personnel by seniority for dropdown
+  const getAvailablePersonnel = () => {
+    return [...funcionarios]
+      .filter(f => !isEditing || f.id !== funcionario?.id) // Exclude current if editing
+      .sort((a, b) => {
+        // Sort by graduacao first
+        const ordemA = GRADUACAO_HIERARCHY[a.graduacao].ordem;
+        const ordemB = GRADUACAO_HIERARCHY[b.graduacao].ordem;
+        if (ordemA !== ordemB) return ordemA - ordemB;
+        
+        // Then by seniority order
+        return a.ordemAntiguidade - b.ordemAntiguidade;
+      });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,37 +69,61 @@ export function FuncionarioForm({ funcionario, onClose }: FuncionarioFormProps) 
       return;
     }
 
+    // Check for duplicates
+    const duplicateExists = funcionarios.some(
+      f => f.nome.toLowerCase() === formData.nome.trim().toLowerCase() && 
+      (!isEditing || f.id !== funcionario?.id)
+    );
+
+    if (duplicateExists) {
+      setError('Já existe um militar com este nome');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
+      const categoria = getCategoriaByGraduacao(formData.graduacao);
+      
       if (isEditing && funcionario) {
         await updateFuncionario({
           ...funcionario,
           nome: formData.nome.trim(),
-          categoria: formData.categoria,
+          graduacao: formData.graduacao,
+          categoria,
           ativo: formData.ativo,
         });
       } else {
         await addFuncionario({
           nome: formData.nome.trim(),
-          categoria: formData.categoria,
+          graduacao: formData.graduacao,
+          categoria,
+          ordemAntiguidade: getNextOrdemAntiguidade(),
           ativo: formData.ativo,
         });
       }
       onClose();
     } catch (err) {
-      setError('Erro ao salvar funcionário');
+      setError('Erro ao salvar militar');
       console.error(err);
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  // Get all graduacao options ordered by seniority
+  const graduacaoOptions = Object.entries(GRADUACAO_HIERARCHY)
+    .sort(([, a], [, b]) => a.ordem - b.ordem)
+    .map(([key, value]) => ({
+      value: key as Graduacao,
+      label: value.label,
+    }));
+
   return (
     <Dialog open={true} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>
-            {isEditing ? 'Editar Funcionário' : 'Novo Funcionário'}
+            {isEditing ? 'Editar Militar' : 'Novo Militar'}
           </DialogTitle>
         </DialogHeader>
 
@@ -98,26 +144,32 @@ export function FuncionarioForm({ funcionario, onClose }: FuncionarioFormProps) 
               id="nome"
               value={formData.nome}
               onChange={(e) => setFormData(prev => ({ ...prev, nome: e.target.value }))}
-              placeholder="Ex: Sgt Silva"
+              placeholder="Ex: SILVA"
               required
               maxLength={100}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="categoria">Categoria *</Label>
+            <Label htmlFor="graduacao">Graduação *</Label>
             <Select
-              value={formData.categoria}
-              onValueChange={(value) => setFormData(prev => ({ ...prev, categoria: value as Categoria }))}
+              value={formData.graduacao}
+              onValueChange={(value) => setFormData(prev => ({ ...prev, graduacao: value as Graduacao }))}
             >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="GRADUADO">Graduado</SelectItem>
-                <SelectItem value="SOLDADO">Soldado</SelectItem>
+                {graduacaoOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
+            <p className="text-xs text-muted-foreground">
+              Categoria: {getCategoriaByGraduacao(formData.graduacao) === 'GRADUADO' ? 'Graduado' : 'Cabo/Soldado'}
+            </p>
           </div>
 
           <div className="flex items-center justify-between">

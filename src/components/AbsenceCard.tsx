@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { AlertTriangle, Sun, Moon } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AusenciaDia } from '@/types';
-import { ShiftBadge, CategoryBadge } from './Badges';
+import { ShiftBadge, CategoryBadge, MotivoBadge } from './Badges';
 import { cn } from '@/lib/utils';
 
 interface AbsenceCardProps {
@@ -82,13 +82,10 @@ export function AbsenceCard({
                   className="flex flex-wrap items-center gap-2 p-2 rounded-lg bg-background/60"
                 >
                   <span className="font-medium text-foreground">
-                    {item.funcionario.nome}
+                    {item.funcionario.graduacao} {item.funcionario.nome}
                   </span>
-                  <CategoryBadge categoria={item.funcionario.categoria} />
+                  <MotivoBadge motivo={item.ausencia.motivo} />
                   <ShiftBadge turno={item.turno} />
-                  <span className="text-xs text-muted-foreground ml-auto">
-                    {item.ausencia.motivo}
-                  </span>
                 </motion.li>
               ))}
             </ul>

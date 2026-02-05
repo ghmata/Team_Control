@@ -4,7 +4,7 @@ import { Calendar, ChevronDown, ChevronUp } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AusenciaDia } from '@/types';
-import { ShiftBadge, CategoryBadge } from './Badges';
+import { ShiftBadge, CategoryBadge, MotivoBadge } from './Badges';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -86,13 +86,10 @@ export function Next7DaysCard({ ausenciasByDate }: Next7DaysCardProps) {
                                 className="flex flex-wrap items-center gap-2 p-2 rounded-lg bg-muted/50"
                               >
                                 <span className="font-medium text-sm text-foreground">
-                                  {item.funcionario.nome}
+                                  {item.funcionario.graduacao} {item.funcionario.nome}
                                 </span>
-                                <CategoryBadge categoria={item.funcionario.categoria} />
+                                <MotivoBadge motivo={item.ausencia.motivo} />
                                 <ShiftBadge turno={item.turno} />
-                                <span className="text-xs text-muted-foreground ml-auto">
-                                  {item.ausencia.motivo}
-                                </span>
                               </li>
                             ))}
                           </ul>

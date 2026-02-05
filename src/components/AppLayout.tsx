@@ -2,9 +2,8 @@ import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  LayoutDashboard, 
+  LayoutDashboard,
   Search, 
-  Settings, 
   LogOut, 
   Menu, 
   X,
@@ -25,7 +24,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { path: '/', label: 'Dashboard', icon: <LayoutDashboard className="h-5 w-5" /> },
   { path: '/consulta', label: 'Consulta', icon: <Search className="h-5 w-5" /> },
-  { path: '/admin', label: 'Administração', icon: <Settings className="h-5 w-5" />, adminOnly: true },
+  { path: '/admin', label: 'Administração', icon: <Shield className="h-5 w-5" />, adminOnly: true },
 ];
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
@@ -68,24 +67,39 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             ))}
           </nav>
 
-          {/* User info & logout */}
+          {/* User info & logout OR Login button */}
           <div className="hidden md:flex items-center gap-4">
-            <div className="text-right">
-              <p className="text-sm font-medium text-sidebar-foreground">
-                {user?.nome}
-              </p>
-              <p className="text-xs text-sidebar-foreground/60">
-                {isEncarregado ? 'Encarregado' : 'Funcionário'}
-              </p>
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={logout}
-              className="text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent"
-            >
-              <LogOut className="h-5 w-5" />
-            </Button>
+            {user ? (
+              <>
+                <div className="text-right">
+                  <p className="text-sm font-medium text-sidebar-foreground">
+                    {user?.email}
+                  </p>
+                  <p className="text-xs text-sidebar-foreground/60">
+                    {isEncarregado ? 'Administrador' : 'Visualizador'}
+                  </p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={logout}
+                  className="text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent"
+                >
+                  <LogOut className="h-5 w-5" />
+                </Button>
+              </>
+            ) : (
+              <Link to="/login">
+                <Button
+                  variant="default"
+                  size="sm"
+                  className="bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary/90"
+                >
+                  <Users className="h-4 w-4 mr-2" />
+                  Login Admin
+                </Button>
+              </Link>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -128,28 +142,43 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 ))}
                 
                 <div className="pt-4 mt-4 border-t border-sidebar-border">
-                  <div className="flex items-center justify-between px-4">
-                    <div>
-                      <p className="text-sm font-medium text-sidebar-foreground">
-                        {user?.nome}
-                      </p>
-                      <p className="text-xs text-sidebar-foreground/60">
-                        {isEncarregado ? 'Encarregado' : 'Funcionário'}
-                      </p>
+                  {user ? (
+                    <div className="flex items-center justify-between px-4">
+                      <div>
+                        <p className="text-sm font-medium text-sidebar-foreground">
+                          {user?.email}
+                        </p>
+                        <p className="text-xs text-sidebar-foreground/60">
+                          {isEncarregado ? 'Administrador' : 'Visualizador'}
+                        </p>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          logout();
+                          setIsMobileMenuOpen(false);
+                        }}
+                        className="text-sidebar-foreground/70 hover:text-sidebar-foreground"
+                      >
+                        <LogOut className="h-4 w-4 mr-2" />
+                        Sair
+                      </Button>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        logout();
-                        setIsMobileMenuOpen(false);
-                      }}
-                      className="text-sidebar-foreground/70 hover:text-sidebar-foreground"
-                    >
-                      <LogOut className="h-4 w-4 mr-2" />
-                      Sair
-                    </Button>
-                  </div>
+                  ) : (
+                    <div className="px-4">
+                      <Link to="/login" onClick={() => setIsMobileMenuOpen(false)}>
+                        <Button
+                          variant="default"
+                          size="sm"
+                          className="w-full bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary/90"
+                        >
+                          <Users className="h-4 w-4 mr-2" />
+                          Login Admin
+                        </Button>
+                      </Link>
+                    </div>
+                  )}
                 </div>
               </div>
             </motion.nav>

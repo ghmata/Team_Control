@@ -144,7 +144,7 @@ export default function Admin() {
                     onDelete={() => setDeleteConfirm({
                       type: 'ausencia',
                       id: ausencia.id,
-                      name: `ausência de ${funcionario.nome}`
+                      name: `ausência de ${funcionario.graduacao} ${funcionario.nome}`
                     })}
                   />
                 );
@@ -176,7 +176,9 @@ export default function Admin() {
             </Card>
           ) : (
             <div className="grid gap-3 sm:grid-cols-2">
-              {funcionarios.map((funcionario) => (
+              {[...funcionarios]
+                .sort((a, b) => a.ordemAntiguidade - b.ordemAntiguidade)
+                .map((funcionario) => (
                 <FuncionarioAdminCard
                   key={funcionario.id}
                   funcionario={funcionario}
@@ -184,7 +186,7 @@ export default function Admin() {
                   onDelete={() => setDeleteConfirm({
                     type: 'funcionario',
                     id: funcionario.id,
-                    name: funcionario.nome
+                    name: `${funcionario.graduacao} ${funcionario.nome}`
                   })}
                 />
               ))}
@@ -271,7 +273,7 @@ function FuncionarioAdminCard({ funcionario, onEdit, onDelete }: FuncionarioAdmi
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div>
-                <p className="font-semibold text-foreground">{funcionario.nome}</p>
+                <p className="font-semibold text-foreground">{funcionario.graduacao} {funcionario.nome}</p>
                 <div className="flex items-center gap-2 mt-1">
                   <CategoryBadge categoria={funcionario.categoria} />
                   {!funcionario.ativo && (
@@ -317,7 +319,7 @@ function AusenciaAdminCard({ ausencia, funcionario, onEdit, onDelete }: Ausencia
             <div className="flex-1 min-w-0">
               <div className="flex flex-wrap items-center gap-2 mb-1">
                 <span className="font-semibold text-foreground truncate">
-                  {funcionario.nome}
+                  {funcionario.graduacao} {funcionario.nome}
                 </span>
                 <CategoryBadge categoria={funcionario.categoria} />
                 <ShiftBadge turno={ausencia.turnoPadrao} />

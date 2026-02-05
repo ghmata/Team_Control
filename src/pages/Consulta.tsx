@@ -169,7 +169,7 @@ export default function Consulta() {
                     <SelectContent>
                       <SelectItem value="TODOS">Todas</SelectItem>
                       <SelectItem value="GRADUADO">Graduado</SelectItem>
-                      <SelectItem value="SOLDADO">Soldado</SelectItem>
+                      <SelectItem value="CABO_SOLDADO">Cabo/Soldado</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -281,7 +281,7 @@ function AusenciaResultCard({ ausencia, funcionario, isExpanded, onToggle }: Aus
             <CardHeader className="cursor-pointer hover:bg-muted/30 transition-colors p-4">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="font-semibold text-foreground">
-                  {funcionario.nome}
+                  {funcionario.graduacao} {funcionario.nome}
                 </span>
                 <CategoryBadge categoria={funcionario.categoria} />
                 <ShiftBadge turno={ausencia.turnoPadrao} />

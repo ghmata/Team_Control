@@ -38,7 +38,7 @@ interface AusenciaFormProps {
 }
 
 export function AusenciaForm({ ausencia, onClose }: AusenciaFormProps) {
-  const { funcionarios, addAusencia, updateAusencia, validateAusencia } = useData();
+  const { funcionarios, ausencias, addAusencia, updateAusencia, validateAusencia } = useData();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeTab, setActiveTab] = useState('basic');
   
@@ -57,9 +57,47 @@ export function AusenciaForm({ ausencia, onClose }: AusenciaFormProps) {
   const [newExcecaoData, setNewExcecaoData] = useState('');
   const [newExcecaoTurno, setNewExcecaoTurno] = useState<Turno>('MATUTINO');
   const [error, setError] = useState('');
+  const [warnings, setWarnings] = useState<string[]>([]);
+  const [showWarningConfirm, setShowWarningConfirm] = useState(false);
+  const [conflictingAbsences, setConflictingAbsences] = useState<Array<{
+    funcionarioNome: string;
+    funcionarioGraduacao: string;
+    motivo: string;
+    dataInicio: string;
+    dataFim: string;
+  }>>([]);
 
   const isEditing = !!ausencia;
   const activeFuncionarios = funcionarios.filter(f => f.ativo);
+
+  // Get available funcionarios (those without conflicting absences in the selected period)
+  const availableFuncionarios = useMemo(() => {
+    if (!formData.dataInicio || !formData.dataFim) {
+      return activeFuncionarios;
+    }
+
+    const start = parseISO(formData.dataInicio);
+    const end = parseISO(formData.dataFim);
+
+    return activeFuncionarios.filter(func => {
+      // Check if this funcionario has any conflicting absence
+      const conflicts = ausencias.filter(a => {
+        // Skip current absence if editing
+        if (isEditing && ausencia && a.id === ausencia.id) return false;
+        
+        // Only check absences for this funcionario
+        if (a.funcionarioId !== func.id) return false;
+
+        const aStart = parseISO(a.dataInicio);
+        const aEnd = parseISO(a.dataFim);
+
+        // Check if date ranges overlap
+        return start <= aEnd && end >= aStart;
+      });
+
+      return conflicts.length === 0;
+    });
+  }, [formData.dataInicio, formData.dataFim, activeFuncionarios, ausencias, isEditing, ausencia]);
 
   // Get available dates for exceptions
   const availableDatesForException = useMemo(() => {
@@ -155,10 +193,18 @@ export function AusenciaForm({ ausencia, onClose }: AusenciaFormProps) {
       observacao: formData.observacao.trim() || undefined,
     };
 
-    // Validate for conflicts
-    const conflictError = validateAusencia(ausenciaData, ausencia?.id);
-    if (conflictError) {
-      setError(conflictError);
+    // Validate for conflicts and warnings
+    const validation = validateAusencia(ausenciaData, ausencia?.id);
+    if (validation.error) {
+      setError(validation.error);
+      return;
+    }
+
+    // If there are warnings and user hasn't confirmed yet, show confirmation
+    if (validation.warnings.length > 0 && !showWarningConfirm) {
+      setWarnings(validation.warnings);
+      setConflictingAbsences(validation.conflictingAbsences || []);
+      setShowWarningConfirm(true);
       return;
     }
 
@@ -202,6 +248,54 @@ export function AusenciaForm({ ausencia, onClose }: AusenciaFormProps) {
             </motion.div>
           )}
 
+          {warnings.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="space-y-2"
+            >
+              {warnings.map((warning, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-start gap-2 p-3 rounded-lg bg-warning-bg border border-warning-border text-warning-foreground text-sm"
+                >
+                  <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+                  <p>{warning}</p>
+                </div>
+              ))}
+              
+              {/* Show details of conflicting absences */}
+              {conflictingAbsences.length > 0 && (
+                <div className="mt-3 p-3 rounded-lg bg-muted border border-border">
+                  <p className="text-xs font-semibold text-foreground mb-2">
+                    Militares já ausentes:
+                  </p>
+                  <ul className="space-y-2">
+                    {conflictingAbsences.map((absence, idx) => (
+                      <li key={idx} className="text-xs bg-background p-2 rounded border border-border">
+                        <div className="flex items-center justify-between gap-2 flex-wrap">
+                          <span className="font-medium text-foreground">
+                            {absence.funcionarioGraduacao} {absence.funcionarioNome}
+                          </span>
+                          <span className="text-muted-foreground">
+                            {format(parseISO(absence.dataInicio), 'dd/MM/yyyy')} a {format(parseISO(absence.dataFim), 'dd/MM/yyyy')}
+                          </span>
+                        </div>
+                        <div className="mt-1">
+                          <span className="text-primary font-medium">{absence.motivo}</span>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              
+              <p className="text-sm text-muted-foreground font-medium">
+                Deseja prosseguir mesmo assim?
+              </p>
+            </motion.div>
+          )}
+
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="w-full grid grid-cols-2">
               <TabsTrigger value="basic">Básico</TabsTrigger>
@@ -217,46 +311,6 @@ export function AusenciaForm({ ausencia, onClose }: AusenciaFormProps) {
 
             {/* Basic Tab */}
             <TabsContent value="basic" className="space-y-4 mt-4">
-              {/* Funcionário */}
-              <div className="space-y-2">
-                <Label htmlFor="funcionario">Funcionário *</Label>
-                <Select
-                  value={formData.funcionarioId}
-                  onValueChange={(value) => setFormData(prev => ({ ...prev, funcionarioId: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {activeFuncionarios.map((func) => (
-                      <SelectItem key={func.id} value={func.id}>
-                        {func.nome} ({func.categoria === 'GRADUADO' ? 'Graduado' : 'Soldado'})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Motivo */}
-              <div className="space-y-2">
-                <Label htmlFor="motivo">Motivo *</Label>
-                <Select
-                  value={formData.motivo}
-                  onValueChange={(value) => setFormData(prev => ({ ...prev, motivo: value as MotivoAusencia }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {MOTIVOS_AUSENCIA.map((motivo) => (
-                      <SelectItem key={motivo} value={motivo}>
-                        {motivo}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
               {/* Datas */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -279,6 +333,60 @@ export function AusenciaForm({ ausencia, onClose }: AusenciaFormProps) {
                     required
                   />
                 </div>
+              </div>
+
+              {/* Funcionário */}
+              <div className="space-y-2">
+                <Label htmlFor="funcionario">Funcionário *</Label>
+                <Select
+                  value={formData.funcionarioId}
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, funcionarioId: value }))}
+                  disabled={!formData.dataInicio || !formData.dataFim}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={!formData.dataInicio || !formData.dataFim ? "Selecione primeiro o período" : "Selecione..."} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableFuncionarios.length === 0 ? (
+                      <div className="p-2 text-sm text-muted-foreground text-center">
+                        Nenhum funcionário disponível no período
+                      </div>
+                    ) : (
+                      [...availableFuncionarios]
+                        .sort((a, b) => a.ordemAntiguidade - b.ordemAntiguidade)
+                        .map((func) => (
+                        <SelectItem key={func.id} value={func.id}>
+                          {func.graduacao} {func.nome} ({func.categoria === 'GRADUADO' ? 'Graduado' : 'Cabo/Soldado'})
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+                {formData.dataInicio && formData.dataFim && availableFuncionarios.length === 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    Todos os funcionários já possuem ausências neste período.
+                  </p>
+                )}
+              </div>
+
+              {/* Motivo */}
+              <div className="space-y-2">
+                <Label htmlFor="motivo">Motivo *</Label>
+                <Select
+                  value={formData.motivo}
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, motivo: value as MotivoAusencia }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {MOTIVOS_AUSENCIA.map((motivo) => (
+                      <SelectItem key={motivo} value={motivo}>
+                        {motivo}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Turno Padrão */}
@@ -421,16 +529,38 @@ export function AusenciaForm({ ausencia, onClose }: AusenciaFormProps) {
             </TabsContent>
           </Tabs>
 
-          <div className="flex justify-end gap-3 pt-4 border-t">
+          {/* Warning summary before buttons */}
+          {warnings.length > 0 && (
+            <div className="pt-4 border-t">
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive text-destructive font-semibold text-sm mb-4">
+                <AlertCircle className="h-5 w-5 shrink-0" />
+                <p>
+                  {(() => {
+                    const funcionario = funcionarios.find(f => f.id === formData.funcionarioId);
+                    if (!funcionario) return "Atenção: excesso de ausências detectado";
+                    
+                    const categoria = funcionario.categoria === 'GRADUADO' ? 'graduados' : 'cabos/soldados';
+                    const limite = funcionario.categoria === 'GRADUADO' ? 3 : 2;
+                    
+                    return `Nesse período já existem ao menos ${limite} ${categoria} fora`;
+                  })()}
+                </p>
+              </div>
+            </div>
+          )}
+
+          <div className={`flex justify-end gap-3 ${warnings.length > 0 ? 'pt-0' : 'pt-4 border-t'}`}>
             <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
               Cancelar
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting} variant={warnings.length > 0 ? 'destructive' : 'default'}>
               {isSubmitting ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   Salvando...
                 </>
+              ) : warnings.length > 0 ? (
+                'Confirmar e Prosseguir'
               ) : (
                 isEditing ? 'Salvar' : 'Adicionar'
               )}

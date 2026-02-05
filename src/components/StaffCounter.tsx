@@ -92,21 +92,21 @@ export function StaffCounter({ efetivo, turno, date, onTurnoChange }: StaffCount
               </div>
             </div>
 
-            {/* Soldados */}
+            {/* Cabos e soldados */}
             <div className="flex items-center gap-3 p-3 rounded-lg bg-soldado-bg">
               <div className="flex items-center justify-center w-10 h-10 rounded-full bg-soldado/20">
                 <UserCheck className="h-5 w-5 text-soldado" />
               </div>
               <div>
-                <p className="text-xs font-medium text-muted-foreground">Soldados</p>
+                <p className="text-xs font-medium text-muted-foreground">Cabos e soldados</p>
                 <p className="text-xl font-bold text-foreground">
                   <span className={cn(
-                    efetivo.soldados.disponivel < efetivo.soldados.total && 'text-warning'
+                    efetivo.cabosSoldados.disponivel < efetivo.cabosSoldados.total && 'text-warning'
                   )}>
-                    {efetivo.soldados.disponivel}
+                    {efetivo.cabosSoldados.disponivel}
                   </span>
                   <span className="text-muted-foreground font-normal">
-                    /{efetivo.soldados.total}
+                    /{efetivo.cabosSoldados.total}
                   </span>
                 </p>
               </div>
