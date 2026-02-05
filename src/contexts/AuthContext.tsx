@@ -5,8 +5,9 @@ import { Session } from '@supabase/supabase-js';
 interface AuthContextType {
   user: { email: string; id: string } | null;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string, rememberMe?: boolean) => Promise<boolean>;
   logout: () => Promise<void>;
+  changePassword: (newPassword: string) => Promise<boolean>;
   isEncarregado: boolean;
 }
 
@@ -66,7 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (email: string, password: string, rememberMe = false): Promise<boolean> => {
     setIsLoading(true);
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -96,6 +97,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         id: data.user.id,
       });
       setIsEncarregado(!!adminData && !adminError);
+      
+      // Store rememberMe preference
+      if (rememberMe) {
+        localStorage.setItem('rememberMe', 'true');
+      } else {
+        localStorage.removeItem('rememberMe');
+      }
+      
       setIsLoading(false);
       return true;
     } catch (error) {
@@ -107,12 +116,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     await supabase.auth.signOut();
+    localStorage.removeItem('rememberMe');
     setUser(null);
     setIsEncarregado(false);
   };
 
+  const changePassword = async (newPassword: string): Promise<boolean> => {
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+
+      if (error) {
+        console.error('Password change error:', error);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Password change error:', error);
+      return false;
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, logout, isEncarregado }}>
+    <AuthContext.Provider value={{ user, isLoading, login, logout, changePassword, isEncarregado }}>
       {children}
     </AuthContext.Provider>
   );

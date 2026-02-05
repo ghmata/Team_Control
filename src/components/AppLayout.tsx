@@ -13,6 +13,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
+import { ChangePasswordDialog } from '@/components/ChangePasswordDialog';
 
 interface NavItem {
   path: string;
@@ -79,6 +80,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                     {isEncarregado ? 'Administrador' : 'Visualizador'}
                   </p>
                 </div>
+                <ChangePasswordDialog />
                 <Button
                   variant="ghost"
                   size="icon"
